@@ -1,0 +1,5 @@
+streamlit
+spacy
+spacy-streamlit
+pdfminer.six
+gensim

@@ -1,0 +1,7 @@
+.myenv
+images
+set_env.txt
+test_pdf
+word_vectors
+*.git
+*.jar
