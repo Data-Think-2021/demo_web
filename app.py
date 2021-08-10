@@ -1,6 +1,7 @@
 import spacy_streamlit
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 from io import StringIO
 from pdfminer.converter import TextConverter
@@ -50,9 +51,17 @@ def text_analyzer(my_text):
     nlp = spacy.load('de_core_news_sm')
     docs =nlp(my_text)
     tokens = [token.text for token in docs]
-    allData = [(f'"Tokens": {token.text},\n"Lemma":{token.lemma_}') for token in docs]
+    # allData = [(f'"Tokens": {token.text},\n"Lemma":{token.lemma_}') for token in docs]
+    allData = [(token.text,token.lemma_) for token in docs]
     return allData
-    
+
+def word_to_vector(word):
+    nlp = spacy.load('de_core_news_sm')
+    doc = nlp(word)
+    if len(doc) > 1:
+        return doc.vector
+    else: 
+        return doc[0].vector
 
 def entity_recognizer(my_text):
     nlp = spacy.load(r"C:\Users\xia.he\Project\personalWebsite\models\ml_rule_model")
@@ -88,8 +97,19 @@ def main():
         message = st.text_area("Enter Your Text", "")
         if st.button("Analyze"):
             nlp_result = text_analyzer(message)
-            st.json(nlp_result)
+            df = pd.DataFrame(nlp_result, columns = ["Token", "Lemma"])
+            st.dataframe(df)
+            # st.json(nlp_result)
     
+    # Token2Vec 
+    if st.checkbox("Show Word Vector"):
+        st.subheader("Get the vector for text")
+        text = st.text_area("Enter Your Word or Text", "")
+        if st.button("Process"):
+            vector = word_to_vector(text)
+            df = pd.DataFrame(vector,columns=[text])
+            st.dataframe(df.T)
+
      # Word similarity
     if st.checkbox("Show Word Similarity"):
         st.subheader("Find similar words")
@@ -118,18 +138,6 @@ def main():
                 doc, entities = entity_recognizer(message)
                 html = displacy.render(doc, style="ent",options=options)
                 st.markdown(html, unsafe_allow_html=True)   
-
-   
-    # Sentiment Analysis
-    # if st.checkbox("Show Sentiment Analysis"):
-    #     st.subheader("Sentiment of Your Text")
-    #     message = st.text_area("Enter Your Text", "")
-    #     if st.button("Analyze"):
-    #         nlp_result = text_analyzer(message)
-    #         st.json(nlp_result)
-
-    # Text summarization
-
 
 if __name__ == '__main__':
     main()
