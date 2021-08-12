@@ -64,7 +64,7 @@ def word_to_vector(word):
         return doc[0].vector
 
 def entity_recognizer(my_text):
-    nlp = spacy.load(r"C:\Users\xia.he\Project\personalWebsite\models\ml_rule_model")
+    nlp = spacy.load("models/ml_rule_model")
     docs = nlp(my_text)
     entities = [(entity.text, entity.label_) for entity in docs.ents]
     return docs, entities
