@@ -1,7 +1,8 @@
-import spacy_streamlit
 import streamlit as st
 import pandas as pd
 import numpy as np
+from rank_bm25 import BM25Okapi
+import time
 
 from io import StringIO
 from pdfminer.converter import TextConverter
@@ -55,6 +56,7 @@ def text_analyzer(my_text):
     allData = [(token.text,token.lemma_) for token in docs]
     return allData
 
+
 def word_to_vector(word):
     nlp = spacy.load('de_core_news_sm')
     doc = nlp(word)
@@ -62,6 +64,7 @@ def word_to_vector(word):
         return doc.vector
     else: 
         return doc[0].vector
+
 
 def entity_recognizer(my_text):
     nlp = spacy.load("models/ml_rule_model")
@@ -84,6 +87,32 @@ def gen_similarity(word):
     model = KeyedVectors.load_word2vec_format("word_vectors/german.model", binary=True)
     results = model.most_similar(positive=[word])
     return results
+
+
+def search(query):
+    df = pd.read_csv("BB_Feldbau_2007_to_2021.tsv", delimiter= "\t", encoding="utf-8")
+    nlp = spacy.load("de_core_news_sm")
+    text_list = df["text"].values
+    tok_text = []
+    #Tokenising using SpaCy:
+    for doc in nlp.pipe(text_list, disable=["tagger", "parser","ner"]):
+        tok = [t.text for t in doc if t.is_alpha]
+        tok_text.append(tok)
+    # build a BM25 index
+    bm25 = BM25Okapi(tok_text)
+    tokenized_query = query.split(" ")
+    t0 = time.time()
+
+    scores = bm25.get_scores(tokenized_query)
+    top_n_scores = np.sort(scores)[::-1][:3]
+    # top_n_scores = np.argsort(scores)[::-1][:3]
+    results = bm25.get_top_n(tokenized_query, df["file_name"].values, n=3)
+    text_results = bm25.get_top_n(tokenized_query, df["text"].values, n=3)
+
+    t1 = time.time()
+    print(f'Searched {len(text_list)} records in {round(t1-t0,3) } seconds \n')
+    return results,text_results, top_n_scores,len(text_list),round(t1-t0,3)
+    
 
 def main():
     """ NLP App with Streamlit"""
@@ -138,6 +167,17 @@ def main():
                 doc, entities = entity_recognizer(message)
                 html = displacy.render(doc, style="ent",options=options)
                 st.markdown(html, unsafe_allow_html=True)   
+    
+    # Search engine
+    if st.checkbox("Suche Machine"):
+        st.subheader("Search the related document from document stores")
+        query = st.text_area("Enter keyword or texts")
+        if st.button("Search"):
+            results, text_results, scores, n_docs, search_time = search(query)
+            df = pd.DataFrame({"Doc Name": results, "Text":text_results, "Scores": scores})
+            st.dataframe(df)
+            st.markdown(f'Searched {n_docs} records in {search_time } seconds \n')
+
 
 if __name__ == '__main__':
     main()
