@@ -90,7 +90,7 @@ def gen_similarity(word):
 
 
 def search(query):
-    df = pd.read_csv("BB_Feldbau_2007_to_2021.tsv", delimiter= "\t", encoding="utf-8")
+    df = pd.read_csv("doc_sample.tsv", delimiter= "\t", encoding="utf-8")
     nlp = spacy.load("de_core_news_sm")
     text_list = df["text"].values
     tok_text = []
