@@ -172,7 +172,7 @@ def main():
     if st.checkbox("Suche Machine"):
         st.subheader("Search the related document from document stores")
         query = st.text_area("Enter keyword or texts")
-        if st.button("Search"):
+        if st.button("Suchen"):
             results, text_results, scores, n_docs, search_time = search(query)
             df = pd.DataFrame({"Doc Name": results, "Text":text_results, "Scores": scores})
             st.dataframe(df)
