@@ -12,6 +12,9 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
+import cv2
+import pytesseract
+
 # NLP pkgs
 import spacy
 from spacy import displacy
@@ -112,6 +115,12 @@ def search(query):
     t1 = time.time()
     print(f'Searched {len(text_list)} records in {round(t1-t0,3) } seconds \n')
     return results,text_results, top_n_scores,len(text_list),round(t1-t0,3)
+
+
+def image_to_text(img):
+    # process the images and convert to texts
+    text = pytesseract.image_to_string(img,lang="deu")
+    return text
     
 
 def main():
@@ -141,7 +150,7 @@ def main():
 
      # Word similarity
     if st.checkbox("Show Word Similarity"):
-        st.subheader("Find similar words")
+        st.subheader("Not Working remote! Find similar words")
         word = st.text_area("Enter Your Word", "")
         if st.button("Search"):
             nlp_result = gen_similarity(word)
@@ -177,6 +186,22 @@ def main():
             df = pd.DataFrame({"Doc Name": results, "Text":text_results, "Scores": scores})
             st.dataframe(df)
             st.markdown(f'Searched {n_docs} records in {search_time } seconds \n')
+    
+    if st.checkbox("Convert Images to Text"):
+        st.subheader("Update Your Images")
+        uploaded_file = st.file_uploader("Choose an imge in .png or .jpg ", type=["png", "jpg"])
+        if uploaded_file is not None:
+            # convert the file to an opencv image
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+            opencv_image = cv2.imdecode(file_bytes,1)
+            # two columns to display upload picture and extracted text
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(opencv_image,channels="BGR")
+
+            converted_text = image_to_text(opencv_image)
+            with col2:
+                st.write(converted_text)
 
 
 if __name__ == '__main__':

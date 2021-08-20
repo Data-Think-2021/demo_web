@@ -1,7 +1,7 @@
 .myenv
 images
 set_env.txt
-test_pdf
+test_files
 word_vectors
 *.git
 *.jar

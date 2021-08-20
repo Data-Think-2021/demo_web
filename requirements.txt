@@ -3,4 +3,6 @@ spacy
 pdfminer.six
 gensim
 rank_bm25
+opencv-python==4.5.1.48 
+pytesseract
 https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-3.0.0/de_core_news_sm-3.0.0.tar.gz
